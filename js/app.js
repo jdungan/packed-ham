@@ -2,73 +2,7 @@
 
 $("#dialer").on("pagecreate", function() {
   
-  var svg = d3.select('#canvas')
-    .append('svg')
-    .attr('width', window.innerWidth)
-    .attr('height', window.innerHeight*.8)
-    svg.wheels=[];
-
-    var update_grades = function (d) {
-      if (d.elements){
-        grades.data(d.elements)
-      } 
-      
-    }
-
-    var add_card = function(){
-      var card = new ScoreCard(svg)
-      card().transform.translate({
-        x: window.innerWidth/2,
-        y: window.innerHeight * 0.05 
-      })
-      .scale({
-        x: 3,
-        y: 3
-      })
-      .render()
-    return card()  
-    }
-
-    var score = add_card();
-       
-    var add_gradebar = function () {
-      
-      var bar = new GradeScale(svg)
-
-      bar().transform.translate({
-        x: window.innerWidth/2,
-        y: window.innerHeight * 0.3 
-      })
-      .scale({
-        x: 3,
-        y: 3
-      })
-      .render()
-      
-      return bar()
-    }
-  
-    var grades = add_gradebar()
-    
-  var add_wheel = function(){
-    var wheel = new Wheel(svg);
-    wheel().transform
-      .translate({
-        x: (window.innerWidth / 2),
-        y: (window.innerHeight * 0.8)
-      })
-      .scale({
-        x: 2.2,
-        y: 2
-      })
-      .render()     
-      return wheel();
-  }
-   
-  svg.category = function () {
-    return svg.wheel().categorize(svg.wheel().transform.rotate())
-  }
-
+ 
   $( "#canvas" ).on( "swipeup", function( event ) {
     console.log('up')
     if (svg.wheels.length != 1) {
@@ -171,22 +105,8 @@ $("#dialer").on("pagecreate", function() {
     sgh.sample()
       .done(function(data) {
         
-        // patch for nesting
-        // data.elements = data.scores;
-        
-        update_grades(data.elements[0])
-        
-        svg.wheels.unshift(add_wheel())
-        
-        svg.wheels[0].data(data.elements);
-        
-        score.setScore(data.elements[0])
-            
-        d3.select('#title')
-          .append('li')
-          .text(data.elements[0].label)
-
-      })
+        layouts.packed(data)
+      })  
       .error(function(d) {
         debugger;
       });
