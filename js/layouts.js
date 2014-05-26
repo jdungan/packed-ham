@@ -8,18 +8,31 @@ var scale_colors = {
 var color_quantile = d3.scale.quantile()
     .domain([0,1])
     .range([scale_colors['bad'], scale_colors['med'], scale_colors['good']]);
-    
+
 
 layouts = {
 
   packed: function(root) {
 
-    var viewport = {
-      width: window.innerWidth,
-      height: window.innerHeight
+
+    function View () {
+      
+      var th= $('#ham_title').height(),
+      v={
+        width: window.innerWidth,
+        height: window.innerHeight -th
+      }
+      
+      v.diameter = v.width > v.height ? v.height : v.width
+
+
+      return v
     }
 
-    var margin = 10,diameter = viewport.width;
+    var viewport = new View()
+
+    var margin = 10,
+    diameter = viewport.diameter;
 
     // var color = d3.scale.linear()
     //   .domain([-1, 5])
@@ -99,21 +112,20 @@ layouts = {
       });
 
 
-    $(window).on( "orientationchange", function( event ) {
-       viewport = {
-        width: window.innerWidth,
-        height: window.innerHeight
-      }
 
-      d3.select("#canvas")
+
+    $(window).on( "orientationchange", function( event ) {
+       viewport = new View()
+       diameter = viewport.diameter;
+
+      svg
         .attr("width", viewport.width)
         .attr("height", viewport.height)
-      
-      diameter = viewport.width;
+        .attr("transform", "translate(" + diameter / 2 + "," + diameter / 2 + ")");
 
       pack.size([diameter - margin, diameter - margin])
       
-      nodes = pack.nodes(root)
+      nodes = pack.nodes(root)      
             
       zoomTo([root.x, root.y, root.r * 2 + margin]);
 
