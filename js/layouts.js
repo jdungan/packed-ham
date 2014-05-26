@@ -70,7 +70,7 @@ layouts = {
         return d.elements ? color(score()) : color(d.score)
       })
       .attr('opacity',function (d,i) {
-        return 1/1/d.depth
+        return (d.depth+3)/10
       })
       .on("click", function(d) {
         if (focus !== d) zoom(d), d3.event.stopPropagation();
