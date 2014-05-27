@@ -238,8 +238,8 @@ var clone_node = function(node, parent) {
         if (typeof newValue ==='number'){
           this( {x:this().x+newValue,y:this().y+newValue})        
         } else {
-          if (obj.x||obj.x) { this(this().x += newValue.x) }
-          if (obj.y||obj.y) { this(this().y += newValue.y) }
+          if (newValue.x||newValue.x) { this().x += newValue.x }
+          if (newValue.y||newValue.y) { this().y += newValue.y }
         }
         
         return this_transform;

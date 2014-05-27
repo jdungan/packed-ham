@@ -55,14 +55,21 @@ layouts = {
         })
 
     var svg = d3.select("#canvas")
-      .attr("width", diameter)
+      .attr("width", viewport.width)
       .attr("height", viewport.height)
       .append("g")
-      .attr("transform", "translate(" + diameter / 2 + "," + diameter / 2 + ")");
+      // .attr('fill','yellow')
+      // .attr("transform", "translate(" + diameter / 2 + "," + diameter / 2 + ")");
+      
 
     var focus = root,
       nodes = pack.nodes(root),
       view;
+
+      // add d3 tranform sugar
+      svg.call(Transform)
+
+      // svg.translate(focus.r).render()
 
     var circle = svg.selectAll("circle")
       .data(nodes)
@@ -82,8 +89,19 @@ layouts = {
           }
         return d.score ? color(d.score) : color(score()) 
       })
-      .attr('opacity',function (d,i) {
-        return (d.depth+3)/10
+      .attr({
+          opacity: function(d, i) {
+            return (d.depth + 3) / 10
+          },
+          r: function(d) {
+            return d.r;
+          },
+          cx: function(d) {
+            return d.x;
+          },
+          cy: function(d) {
+            return d.y;
+          }
       })
       .on("click", function(d) {
         if (focus !== d) zoom(d), d3.event.stopPropagation();
@@ -111,7 +129,7 @@ layouts = {
         zoom(root);
       });
        
-      zoomTo([root.x, root.y, root.r * 2 + margin]);
+      // zoomTo([root.x, root.y, root.r * 2 + margin]);
       
       
       
@@ -136,29 +154,41 @@ layouts = {
     function zoom(d) {
       var focus0 = focus;
       focus = d;
+      
+      k=(diameter/2)
+      
+      s = k/(d.r)
+      // var transition = d3.transition()
+      //   .duration(750)//d3.event.altKey ? 7500 : 750)
+      //   .tween("zoom", function(d) {
+      //     var i = d3.interpolateZoom(view, [focus.x, focus.y, focus.r * 2 + margin]);
+      //     return function(t) {
+      //       zoomTo(i(t));
+      //     };
+      //   });
 
-      var transition = d3.transition()
-        .duration(750)//d3.event.altKey ? 7500 : 750)
-        .tween("zoom", function(d) {
-          var i = d3.interpolateZoom(view, [focus.x, focus.y, focus.r * 2 + margin]);
-          return function(t) {
-            zoomTo(i(t));
-          };
-        });
+        
+      svg
+      .translate({x:(-focus.x*s)+(k),y:(-focus.y*s)+(k)})
+      .scale(s)
+      .animate()
 
-      transition.selectAll("text")
-        .filter(function(d) {
-          return d.parent === focus || this.style.display === "inline";
-        })
-        .style("fill-opacity", function(d) {
-          return d.parent === focus ? 1 : 0;
-        })
-        .each("start", function(d) {
-          if (d.parent === focus) this.style.display = "inline";
-        })
-        .each("end", function(d) {
-          if (d.parent !== focus) this.style.display = "none";
-        });
+
+      console.log(svg.toString())
+  
+      // transition.selectAll("text")
+      //   .filter(function(d) {
+      //     return d.parent === focus || this.style.display === "inline";
+      //   })
+      //   .style("fill-opacity", function(d) {
+      //     return d.parent === focus ? 1 : 0;
+      //   })
+      //   .each("start", function(d) {
+      //     if (d.parent === focus) this.style.display = "inline";
+      //   })
+      //   .each("end", function(d) {
+      //     if (d.parent !== focus) this.style.display = "none";
+      //   });
     }
 
     function zoomTo(v) {
