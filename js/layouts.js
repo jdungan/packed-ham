@@ -80,7 +80,7 @@ layouts = {
                 return p + c
               }, 0) / d.elements.length;
           }
-        return d.elements ? color(score()) : color(d.score)
+        return d.score ? color(d.score) : color(score()) 
       })
       .attr('opacity',function (d,i) {
         return (d.depth+3)/10
@@ -110,9 +110,11 @@ layouts = {
       .on("click", function() {
         zoom(root);
       });
-
-
-
+       
+      zoomTo([root.x, root.y, root.r * 2 + margin]);
+      
+      
+      
 
     $(window).on( "orientationchange", function( event ) {
        viewport = new View()
@@ -130,10 +132,6 @@ layouts = {
       zoomTo([root.x, root.y, root.r * 2 + margin]);
 
      } )
-       
-    zoomTo([root.x, root.y, root.r * 2 + margin]);
-    
-    
 
     function zoom(d) {
       var focus0 = focus;

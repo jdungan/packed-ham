@@ -183,36 +183,69 @@ var clone_node = function(node, parent) {
 }
 //tranform function to be added to a d3 objects
 
-  function Transform(element) {
+  function Transform() {
     var order = ['translate', 'scale', 'rotate'],
-      inner = {
-        translate: {
-          value: {
-            x: 0,
-            y: 0
-          },
-          string: xyString
+    inner = {
+      translate: {
+        private:{x:0,y:0},
+        value: xyValue,
+        string: xyString,
+        increment: xyIncrement
+      },
+      scale: {
+        private:{x:1,y:1}, 
+        value:  xyValue,
+        string: xyString,
+        increment: xyIncrement
+      },
+      rotate: {
+        value: rotation,
+        string: function() {
+          return rotation()
         },
-        scale: {
-          value: {
-            x: 1,
-            y: 1
-          },
-          string: xyString
-        },
-        rotate: {
-          value: rotation,
-          string: function() {
-            return rotation()
-          }
-        }
-      };
-
-
-    function xyString() {
-      return this.value.x === this.value.y ? this.value.x : this.value.x + ',' + this.value.y
+        increment:rotationIncrement
+      }
     };
 
+
+    function xyValue(newValue){
+
+      if (newValue === undefined) {
+        return this.private;
+      }
+      var newObj;
+      
+      if (typeof newValue ==='number'){
+        newObj= {x:newValue,y:newValue}        
+      } else {
+        newObj=newValue  
+      }
+      this.private = newObj
+      
+      return this.private
+      
+    }
+
+    function xyString() {
+      return this.private.x + ',' + this.private.y
+    };
+
+    function xyIncrement(transform){
+      var this_transform = transform;
+
+      return function(newValue){
+        
+        if (typeof newValue ==='number'){
+          this( {x:this().x+newValue,y:this().y+newValue})        
+        } else {
+          if (obj.x||obj.x) { this(this().x += newValue.x) }
+          if (obj.y||obj.y) { this(this().y += newValue.y) }
+        }
+        
+        return this_transform;
+      }
+    }
+    
     function rotation(degree) {
 
       if (degree === undefined) {
@@ -224,6 +257,14 @@ var clone_node = function(node, parent) {
       }
       
       return rotation.value
+    }
+
+    function rotationIncrement(transform){
+      var this_transform = transform;
+      return function(value){
+        this (this() + value)
+        return this_transform;
+      }
     }
 
 
@@ -240,14 +281,17 @@ var clone_node = function(node, parent) {
         var new_value = (typeof d === 'function') ? d(element) : d
 
         isFunction ? inner[v].value(new_value) : inner[v].value = new_value
-
+        
         return this;
 
       }
+    
+    this[v].incr = new inner[v].increment(this)
+      
     }, this);
 
     this.render = function() {
-      element.attr('transform', this.toString());
+      this.attr('transform', this.toString());
     }
 
     this.animate = function(options) {
@@ -256,12 +300,12 @@ var clone_node = function(node, parent) {
         ease = options.ease || '',
         opacity = options.opacity || '1';
 
-      return element.transition()
+      return this.transition()
         .duration(duration)
         .ease(d3.ease(ease))
         .attr('transform', this.toString())
         .attr('opacity', opacity)
-    }
+    }    
 
     this.toString = function() {
       return order.map(
