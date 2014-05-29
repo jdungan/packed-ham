@@ -1,47 +1,31 @@
 
-var scale_colors = {
-    good: '#37D7B2',
-    med: '#EBC355',
-    bad: '#F86C5F'
-}
-
-var color_quantile = d3.scale.quantile()
-    .domain([0,1])
-    .range([scale_colors['bad'], scale_colors['med'], scale_colors['good']]);
-
-
 layouts = {
 
   packed: function(root) {
 
+    var scale_colors = {
+      good: '#37D7B2',
+      med: '#EBC355',
+      bad: '#F86C5F'
+    }
 
-    function View () {
-      
-      var th= $('#ham_title').height(),
-      v={
-        width: window.innerWidth,
-        height: window.innerHeight -th
-      }
-      
+    var color = d3.scale.quantile()
+      .domain([0, 1])
+      .range([scale_colors['bad'], scale_colors['med'], scale_colors['good']]);
+
+    function View() {
+      var th = $('#ham_title').height(),
+        v = {
+          width: window.innerWidth,
+          height: window.innerHeight - th
+        }
       v.diameter = v.width > v.height ? v.height : v.width
-
-
       return v
     }
 
-    var viewport = new View()
-
-    var margin = 10,
-    diameter = viewport.diameter;
-
-    // var color = d3.scale.linear()
-    //   .domain([-1, 5])
-    //   .range(["hsl(152,80%,80%)", "hsl(228,30%,40%)"])
-    //   .interpolate(d3.interpolateHcl);
-
-    var color = color_quantile
-      
-    // color.interpolate(d3.interpolateHcl);
+    var viewport = new View(),
+        margin = 20,
+        diameter = viewport.diameter;
 
     var pack = d3.layout.pack()
       .padding(2)
@@ -58,18 +42,12 @@ layouts = {
       .attr("width", viewport.width)
       .attr("height", viewport.height)
       .append("g")
-      // .attr('fill','yellow')
-      // .attr("transform", "translate(" + diameter / 2 + "," + diameter / 2 + ")");
-      
+      // add d3 tranform sugar
+      svg.call(Transform)
 
     var focus = root,
       nodes = pack.nodes(root),
       view;
-
-      // add d3 tranform sugar
-      svg.call(Transform)
-
-      // svg.translate(focus.r).render()
 
     var circle = svg.selectAll("circle")
       .data(nodes)
@@ -77,31 +55,31 @@ layouts = {
       .attr("class", function(d) {
         return d.parent ? d.children ? "node" : "node node--leaf" : "node node--root";
       })
-      .style("fill", function(d) {      
+      .style("fill", function(d) {
         // return d.children ? color(d.score) : null;
-          var score = function() {
-            return d.elements.map(function(d) {
-              return d.score
-            })
-              .reduce(function(p, c, i) {
-                return p + c
-              }, 0) / d.elements.length;
-          }
-        return d.score ? color(d.score) : color(score()) 
+        var score = function() {
+          return d.elements.map(function(d) {
+            return d.score
+          })
+            .reduce(function(p, c, i) {
+              return p + c
+            }, 0) / d.elements.length;
+        }
+        return d.score ? color(d.score) : color(score())
       })
       .attr({
-          opacity: function(d, i) {
-            return (d.depth + 3) / 10
-          },
-          r: function(d) {
-            return d.r;
-          },
-          cx: function(d) {
-            return d.x;
-          },
-          cy: function(d) {
-            return d.y;
-          }
+        opacity: function(d, i) {
+          return (d.depth + 3) / 10
+        },
+        r: function(d) {
+          return d.r;
+        },
+        cx: function(d) {
+          return d.x;
+        },
+        cy: function(d) {
+          return d.y;
+        }
       })
       .on("click", function(d) {
         if (focus !== d) zoom(d), d3.event.stopPropagation();
@@ -109,17 +87,29 @@ layouts = {
 
     var text = svg.selectAll("text")
       .data(nodes)
-      .enter().append("text")
-      .attr("class", "label")
+      .enter().append("text")     
+      .attr({
+        'class':"label",
+        x: function (d) {
+          return d.x
+        },
+        y: function (d,i) {
+          l=5
+          return i%2===0 ? d.y+l : d.y-l
+        }
+      })
+      .style('font-size',function (d,i) {
+        return 16/d.depth
+      })
       .style("fill-opacity", function(d) {
-        return d.parent === root ? 1 : 0;
+        return d.parent === root ? 1: 0;
       })
       .style("display", function(d) {
         return d.parent === root ? null : "none";
       })
       .text(function(d) {
         return d.label;
-      });
+      });      
 
     var node = svg.selectAll("circle,text");
 
@@ -129,11 +119,6 @@ layouts = {
         zoom(root);
       });
        
-      // zoomTo([root.x, root.y, root.r * 2 + margin]);
-      
-      
-      
-
     $(window).on( "orientationchange", function( event ) {
        viewport = new View()
        diameter = viewport.diameter;
@@ -141,67 +126,44 @@ layouts = {
       svg
         .attr("width", viewport.width)
         .attr("height", viewport.height)
-        .attr("transform", "translate(" + diameter / 2 + "," + diameter / 2 + ")");
-
-      pack.size([diameter - margin, diameter - margin])
+        .translate(diameter / 2)
+        
+      // pack.size([diameter - margin, diameter - margin])
       
-      nodes = pack.nodes(root)      
+      // nodes = pack.nodes(root)      
             
-      zoomTo([root.x, root.y, root.r * 2 + margin]);
+      // zoomTo([root.x, root.y, root.r * 2 + margin]);
 
      } )
 
     function zoom(d) {
-      var focus0 = focus;
-      focus = d;
+      var focus0 = focus; focus = d;
       
       k=(diameter/2)
       
       s = k/(d.r)
-      // var transition = d3.transition()
-      //   .duration(750)//d3.event.altKey ? 7500 : 750)
-      //   .tween("zoom", function(d) {
-      //     var i = d3.interpolateZoom(view, [focus.x, focus.y, focus.r * 2 + margin]);
-      //     return function(t) {
-      //       zoomTo(i(t));
-      //     };
-      //   });
-
         
       svg
-      .translate({x:(-focus.x*s)+(k),y:(-focus.y*s)+(k)})
-      .scale(s)
-      .animate()
+        .translate({x:(-focus.x*s)+k,y:(-focus.y*s)+k})
+        .scale(s)
+        .animate()
 
-
-      console.log(svg.toString())
-  
-      // transition.selectAll("text")
-      //   .filter(function(d) {
-      //     return d.parent === focus || this.style.display === "inline";
-      //   })
-      //   .style("fill-opacity", function(d) {
-      //     return d.parent === focus ? 1 : 0;
-      //   })
-      //   .each("start", function(d) {
-      //     if (d.parent === focus) this.style.display = "inline";
-      //   })
-      //   .each("end", function(d) {
-      //     if (d.parent !== focus) this.style.display = "none";
-      //   });
+      .selectAll("text")
+        .filter(function(d) {
+          return d.parent === focus || this.style.display === "inline";
+        })
+        .style("fill-opacity", function(d) {
+          return d.parent === focus ? 1 : 0;
+        })
+        .each("start", function(d) {
+          if (d.parent === focus) this.style.display = "inline";
+        })
+        .each("end", function(d) {
+          if (d.parent !== focus) this.style.display = "none";
+        });
     }
 
-    function zoomTo(v) {
-      var k = diameter / v[2];
-      view = v;
-      node.attr("transform", function(d) {
-        return "translate(" + (d.x - v[0]) * k + "," + (d.y - v[1]) * k + ")";
-      });
-      circle.attr("r", function(d) {
-        return d.r * k;
-      });
-    }
-    // });
+    zoom(root);
 
     d3.select(self.frameElement).style("height", diameter + "px");
 

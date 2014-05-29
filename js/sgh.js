@@ -207,7 +207,6 @@ var clone_node = function(node, parent) {
       }
     };
 
-
     function xyValue(newValue){
 
       if (newValue === undefined) {
@@ -291,7 +290,7 @@ var clone_node = function(node, parent) {
     }, this);
 
     this.render = function() {
-      this.attr('transform', this.toString());
+      return this.attr('transform', this.toString());
     }
 
     this.animate = function(options) {
