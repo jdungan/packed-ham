@@ -13,6 +13,10 @@ layouts = {
       .domain([0, 1])
       .range([scale_colors['bad'], scale_colors['med'], scale_colors['good']]);
 
+      var fonts = d3.scale.quantile()
+      .domain([0,3])
+      .range([10,18,12,3])
+
     function View() {
       var th = $('#ham_title').height(),
         v = {
@@ -98,8 +102,8 @@ layouts = {
           return i%2===0 ? d.y+l : d.y-l
         }
       })
-      .style('font-size',function (d,i) {
-        return 16/d.depth
+      .style('font-size',function (d,i) {        
+        return fonts(d.depth)
       })
       .style("fill-opacity", function(d) {
         return d.parent === root ? 1: 0;
@@ -128,11 +132,7 @@ layouts = {
         .attr("height", viewport.height)
         .translate(diameter / 2)
         
-      // pack.size([diameter - margin, diameter - margin])
-      
-      // nodes = pack.nodes(root)      
-            
-      // zoomTo([root.x, root.y, root.r * 2 + margin]);
+      zoom(root);
 
      } )
 
