@@ -98,24 +98,28 @@ layouts = {
           return d.x
         },
         y: function (d,i) {
+          return d.y
           l=5
           return i%2===0 ? d.y+l : d.y-l
         }
       })
-      .style('font-size',function (d,i) {        
-        return fonts(d.depth)
-      })
+      .text(function(d) {
+        return d.label;
+      })      
+      .style("font-size", function(d) { 
+        return Math.min(2 * d.r, (2 * d.r -2 ) / this.getComputedTextLength() * 16) + "px"; })
+      .attr("dy", ".35em")
+      // .style('font-size',function (d,i) {        
+      //   return fonts(d.depth)
+      // })
       .style("fill-opacity", function(d) {
         return d.parent === root ? 1: 0;
       })
       .style("display", function(d) {
         return d.parent === root ? null : "none";
-      })
-      .text(function(d) {
-        return d.label;
-      });      
+      });
 
-    var node = svg.selectAll("circle,text");
+    // var node = svg.selectAll("circle,text");
 
     d3.select("body")
       .style("background", color(-1))
@@ -146,7 +150,7 @@ layouts = {
       svg
         .translate({x:(-focus.x*s)+k,y:(-focus.y*s)+k})
         .scale(s)
-        .animate()
+        .animate({ease:'sin',duration:750})
 
       .selectAll("text")
         .filter(function(d) {
