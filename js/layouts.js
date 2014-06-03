@@ -60,7 +60,6 @@ layouts = {
         return d.parent ? d.children ? "node" : "node node--leaf" : "node node--root";
       })
       .style("fill", function(d) {
-        // return d.children ? color(d.score) : null;
         var score = function() {
           return d.elements.map(function(d) {
             return d.score
@@ -69,7 +68,7 @@ layouts = {
               return p + c
             }, 0) / d.elements.length;
         }
-        return d.score ? color(d.score) : color(score())
+        return d.score!=undefined ? color(d.score) : color(score())
       })
       .attr({
         opacity: function(d, i) {
