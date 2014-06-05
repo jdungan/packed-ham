@@ -129,7 +129,8 @@ var sgh = new(function api() {
   }]
 
   this.options = this.options || {
-    url: 'http://206.214.166.144/'
+    // url: 'http://206.214.166.144/'
+    url:'http://api.healtharound.me/'
   };
 
   this.call_api = function(uri, ajax_params) {
