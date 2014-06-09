@@ -35,7 +35,7 @@ layouts = {
       .padding(2)
       .size([diameter - margin, diameter - margin])
       .value(function(d) {
-        return 1/d.score;
+        return 1-d.score;
       })
       .children(
         function children(d) {
