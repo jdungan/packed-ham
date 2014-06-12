@@ -13,17 +13,13 @@ layouts = {
       .domain([0, 1])
       .range([scale_colors['bad'], scale_colors['med'], scale_colors['good']]);
 
-      var fonts = d3.scale.quantile()
-      .domain([0,3])
-      .range([10,18,12,3])
-
     function View() {
       var th = $('#ham_title').height(),
         v = {
           width: window.innerWidth,
           height: window.innerHeight - th
         }
-      v.diameter = v.width > v.height ? v.height : v.width
+      v.diameter = Math.min(v.height,v.width)
       return v
     }
 
@@ -46,8 +42,9 @@ layouts = {
       .attr("width", viewport.width)
       .attr("height", viewport.height)
       .append("g")
-      // add d3 tranform sugar
-      svg.call(Transform)
+
+    // add d3 tranform sugar
+    svg.call(Transform)
 
     var focus = root,
       nodes = pack.nodes(root),
@@ -85,38 +82,71 @@ layouts = {
         }
       })
       .on("click", function(d) {
-        if (focus !== d) zoom(d), d3.event.stopPropagation();
+        if (focus===d) {
+          // debugger
+        }
+        else{ 
+          zoom(d)
+          d3.event.stopPropagation()
+        };
+      
+      
       });
 
-    var text = svg.selectAll("text")
-      .data(nodes)
-      .enter().append("text")     
-      .attr({
-        'class':"label",
-        x: function (d) {
-          return d.x
-        },
-        y: function (d,i) {
-          return d.y
-          l=5
-          return i%2===0 ? d.y+l : d.y-l
-        }
-      })
-      .text(function(d) {
-        return d.label;
-      })      
-      .style("font-size", function(d) { 
-        return Math.min(2 * d.r, (2 * d.r -2 ) / this.getComputedTextLength() * 16) + "px"; })
-      .attr("dy", ".35em")
-      // .style('font-size',function (d,i) {        
-      //   return fonts(d.depth)
-      // })
-      .style("fill-opacity", function(d) {
-        return d.parent === root ? 1: 0;
-      })
-      .style("display", function(d) {
-        return d.parent === root ? null : "none";
-      });
+    var text = svg.selectAll("text").data(nodes)
+      
+
+//scores
+      text.enter().append("text")     
+        .attr({
+          'class':"score",
+          x: function (d) {
+            return d.x
+          },
+          y: function (d,i) {
+            // debugger;
+            return d.y + (d.r*.45)
+          }
+        })
+        .text(function(d) {
+          return Math.floor(d.score*100);
+        })      
+        .style("font-size", function(d) {
+          return Math.min(d.r, (d.r)/ this.getComputedTextLength() * 10) + "px"; })
+        .attr("dy", ".35em")
+        .style("fill-opacity", function(d) {
+          return d.parent === root ? 1: 0;
+        })
+        .style("display", function(d) {
+          return d.parent === root ? null : "none";
+        });
+
+    //labels      
+        text.enter().append("text")     
+          .attr({
+            'class':"label",
+            x: function (d) {
+              return d.x
+            },
+            y: function (d,i) {
+              return d.y
+            }
+          })
+          .text(function(d) {
+            return d.label;
+          })      
+          .style("font-size", function(d) { 
+            return Math.min(2 * d.r, (2 * d.r -2 ) / this.getComputedTextLength() * 16) + "px"; })
+          .attr("dy", ".35em")
+          .style("fill-opacity", function(d) {
+            return d.parent === root ? 1: 0;
+          })
+          .style("display", function(d) {
+            return d.parent === root ? null : "none";
+          });
+
+
+
 
     // var node = svg.selectAll("circle,text");
 
@@ -126,7 +156,7 @@ layouts = {
         zoom(root);
       });
        
-    $(window).on( "orientationchange", function( event ) {
+    $(window).on( "orientationchange resize", function( event ) {
        viewport = new View()
        diameter = viewport.diameter;
 
@@ -140,7 +170,8 @@ layouts = {
      } )
 
     function zoom(d) {
-      var focus0 = focus; focus = d;
+      
+      focus = d;
       
       k=(diameter/2)
       
@@ -149,7 +180,7 @@ layouts = {
       svg
         .translate({x:(-focus.x*s)+k,y:(-focus.y*s)+k})
         .scale(s)
-        .animate({ease:'sin',duration:750})
+        .animate({ease:'cubic',duration:750})
 
       .selectAll("text")
         .filter(function(d) {
