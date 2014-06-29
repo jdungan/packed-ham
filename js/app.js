@@ -11,10 +11,6 @@ $("#dialer").on("pagecreate", function() {
   
   $( "#canvas" ).on( "swipedown", function( event ) {
     console.log('down')
-    
-
-
-
   })
   
   
@@ -32,8 +28,8 @@ $("#dialer").on("pagecreate", function() {
 
 
   // wait for the api to be ready (which means waiting for position)
-  sgh.ready.done(function() {
-    sgh.sample()
+  ham.ready.done(function() {
+    ham.score()
       .done(function(data) {
         
         

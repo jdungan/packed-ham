@@ -12,6 +12,10 @@ layouts = {
     var color = d3.scale.quantile()
       .domain([0, 1])
       .range([scale_colors['bad'], scale_colors['med'], scale_colors['good']]);
+      
+    var grades = d3.scale.quantile()
+      .domain([0,1])
+      .range(['F','F','F','D','D','C','C','B','B','A','A'])
 
     function View() {
       var th = $('#ham_title').height(),
@@ -28,31 +32,68 @@ layouts = {
         diameter = viewport.diameter;
 
     var pack = d3.layout.pack()
+    
       .padding(2)
       .size([diameter - margin, diameter - margin])
       .value(function(d) {
         return 1-d.score;
       })
+      
       .children(
         function children(d) {
           return d.elements;
         })
 
+    
+    function zoom(d) {
+  
+      focus = d;
+  
+      k=(diameter/2)
+  
+      s = k/(d.r)
+    
+      svg
+        .translate({x:(-focus.x*s)+k,y:(-focus.y*s)+k})
+        .scale(s)
+        .animate({ease:'cubic',duration:750})
+
+      .selectAll("text")
+        .filter(function(d) {
+          return d.parent === focus || this.style.display === "inline";
+        })
+        .style("fill-opacity", function(d) {
+          return d.parent === focus ? 1 : 0;
+        })
+        .each("start", function(d) {
+          if (d.parent === focus) this.style.display = "inline";
+        })
+        .each("end", function(d) {
+          if (d.parent !== focus) this.style.display = "none";
+        });
+    }
+
+      
     var svg = d3.select("#canvas")
       .attr("width", viewport.width)
       .attr("height", viewport.height)
       .append("g")
-
+          
     // add d3 tranform sugar
     svg.call(Transform)
-
+    
     var focus = root,
       nodes = pack.nodes(root),
       view;
 
+    nodes.sort(function (a,b) {
+          return a.depth-b.depth
+        })
+
     var circle = svg.selectAll("circle")
       .data(nodes)
-      .enter().append("circle")
+      .enter()
+      .insert("circle")
       .attr("class", function(d) {
         return d.parent ? d.children ? "node" : "node node--leaf" : "node node--root";
       })
@@ -69,6 +110,7 @@ layouts = {
       })
       .attr({
         opacity: function(d, i) {
+          // return 1
           return (d.depth + 3) / 10
         },
         r: function(d) {
@@ -82,22 +124,68 @@ layouts = {
         }
       })
       .on("click", function(d) {
-        if (focus===d) {
-          // debugger
-        }
-        else{ 
-          zoom(d)
-          d3.event.stopPropagation()
-        };
+          detail_body.clear()
+          if (focus===d) {
+            // second click
+            // debugger
+          }
+          else{
+            zoom(d)
+            d3.event.stopPropagation()
+          }
+      })
       
+      d3.selectAll('.node--leaf').on('click',function (d,i) {
+        
+        console.log('node--leaf')
+        if (focus != d) 
+          { 
+            focus = d
+            k=diameter/2
+            s = (k/d.r)*1.4
+            svg
+              .translate({x:(-focus.x*s)+k,y:(-focus.y*s)+k})
+              .scale(s)
+              .animate({ease:'ease',duration:750})
+            .selectAll("text")
+              .filter(function(d) {
+                return d.parent === focus || this.style.display === "inline";
+              })
+              .style("fill-opacity", function(d) {
+                return d.parent === focus ? 1 : 0;
+              })
+              .each("start", function(d) {
+                if (d.parent === focus) this.style.display = "inline";
+              })
+              .each("end", function(d) {
+                if (d.parent !== focus) this.style.display = "none";
+              });
+            
+              
+              ham.detail({},d.boundary_id+'/'+d.slug).done(function (details) {
+                detail_header.text(details.properties.display_name)
+                detail_body.add_div(details.properties.metric.score_text.html)
+                detail_box
+                  .scale(1/s)
+                  .translate({x:focus.x-(k/s),y:focus.y-(k*.9/s)})
+                  .animate({opacity:'1',duration:750})
+              })
+
+              d3.event.stopPropagation()
+          }
+        
+        
+        
+      })
       
-      });
+
+
 
     var text = svg.selectAll("text").data(nodes)
       
 
 //scores
-      text.enter().append("text")     
+      text.enter().append("text")
         .attr({
           'class':"score",
           x: function (d) {
@@ -108,9 +196,11 @@ layouts = {
             return d.y + (d.r*.45)
           }
         })
-        .text(function(d) {
-          return Math.floor(d.score*100);
-        })      
+        .text(function(d,i) {
+          return grades(d.score)
+          
+          // return Math.floor(d.score*100);
+        })
         .style("font-size", function(d) {
           return Math.min(d.r, (d.r)/ this.getComputedTextLength() * 10) + "px"; })
         .attr("dy", ".35em")
@@ -144,15 +234,43 @@ layouts = {
           .style("display", function(d) {
             return d.parent === root ? null : "none";
           });
+          
+  // detail box
+    var detail_box = svg.append('g').attr({'class':'detail_box',opacity:'0'})
+    detail_box.call(Transform)
+    
+    var detail_body = detail_box.append("foreignObject")
+      .attr({
+        font: "24px 'Helvetica'",
+        height: viewport.height,
+        width:  viewport.width
+      })
+      .append("xhtml:body")
+        .style("font", "18px 'Helvetica'")   
+      .append("div")    
+    
+    var detail_header = detail_body.append('div')
+    
+
+    detail_body.add_div = function (text) {
+      this.append('div').html(text)
+    }
+
+    detail_body.clear = function (){
+      detail_header.text('')
+      detail_body.html('')
+      detail_box.animate({opacity:'0'})
+      
+    }
 
 
 
-
-    // var node = svg.selectAll("circle,text");
 
     d3.select("body")
       .style("background", color(-1))
       .on("click", function() {
+
+        // console.log(d3.event.toElement.classList)
         zoom(root);
       });
        
@@ -164,38 +282,12 @@ layouts = {
         .attr("width", viewport.width)
         .attr("height", viewport.height)
         .translate(diameter / 2)
+ 
         
       zoom(root);
 
      } )
 
-    function zoom(d) {
-      
-      focus = d;
-      
-      k=(diameter/2)
-      
-      s = k/(d.r)
-        
-      svg
-        .translate({x:(-focus.x*s)+k,y:(-focus.y*s)+k})
-        .scale(s)
-        .animate({ease:'cubic',duration:750})
-
-      .selectAll("text")
-        .filter(function(d) {
-          return d.parent === focus || this.style.display === "inline";
-        })
-        .style("fill-opacity", function(d) {
-          return d.parent === focus ? 1 : 0;
-        })
-        .each("start", function(d) {
-          if (d.parent === focus) this.style.display = "inline";
-        })
-        .each("end", function(d) {
-          if (d.parent !== focus) this.style.display = "none";
-        });
-    }
 
     zoom(root);
 
