@@ -185,31 +185,31 @@ layouts = {
       
 
 //scores
-      text.enter().append("text")
-        .attr({
-          'class':"score",
-          x: function (d) {
-            return d.x
-          },
-          y: function (d,i) {
-            // debugger;
-            return d.y + (d.r*.45)
-          }
-        })
-        .text(function(d,i) {
-          return grades(d.score)
-          
-          // return Math.floor(d.score*100);
-        })
-        .style("font-size", function(d) {
-          return Math.min(d.r, (d.r)/ this.getComputedTextLength() * 10) + "px"; })
-        .attr("dy", ".35em")
-        .style("fill-opacity", function(d) {
-          return d.parent === root ? 1: 0;
-        })
-        .style("display", function(d) {
-          return d.parent === root ? null : "none";
-        });
+      // text.enter().append("text")
+      //   .attr({
+      //     'class':"score",
+      //     x: function (d) {
+      //       return d.x
+      //     },
+      //     y: function (d,i) {
+      //       // debugger;
+      //       return d.y + (d.r*.45)
+      //     }
+      //   })
+      //   .text(function(d,i) {
+      //     return grades(d.score)
+      //
+      //     // return Math.floor(d.score*100);
+      //   })
+      //   .style("font-size", function(d) {
+      //     return Math.min(d.r, (d.r)/ this.getComputedTextLength() * 10) + "px"; })
+      //   .attr("dy", ".35em")
+      //   .style("fill-opacity", function(d) {
+      //     return d.parent === root ? 1: 0;
+      //   })
+      //   .style("display", function(d) {
+      //     return d.parent === root ? null : "none";
+      //   });
 
     //labels      
         text.enter().append("text")     
