@@ -196,138 +196,138 @@ var clone_node = function(node, parent) {
 }
 //tranform function to be added to a d3 objects
 
-  function Transform() {
-    var order = ['translate', 'scale', 'rotate'],
-    inner = {
-      translate: {
-        private:{x:0,y:0},
-        value: xyValue,
-        string: xyString,
-        increment: xyIncrement
-      },
-      scale: {
-        private:{x:1,y:1}, 
-        value:  xyValue,
-        string: xyString,
-        increment: xyIncrement
-      },
-      rotate: {
-        value: rotation,
-        string: function() {
-          return rotation()
-        },
-        increment:rotationIncrement
-      }
-    };
-
-    function xyValue(newValue){
-
-      if (newValue === undefined) {
-        return this.private;
-      }
-      var newObj;
-      
-      if (typeof newValue ==='number'){
-        newObj= {x:newValue,y:newValue}        
-      } else {
-        newObj=newValue  
-      }
-      this.private = newObj
-      
-      return this.private
-      
-    }
-
-    function xyString() {
-      return this.private.x + ',' + this.private.y
-    };
-
-    function xyIncrement(transform){
-      var this_transform = transform;
-
-      return function(newValue){
-        
-        if (typeof newValue ==='number'){
-          this( {x:this().x+newValue,y:this().y+newValue})        
-        } else {
-          if (newValue.x||newValue.x) { this().x += newValue.x }
-          if (newValue.y||newValue.y) { this().y += newValue.y }
-        }
-        
-        return this_transform;
-      }
-    }
-    
-    function rotation(degree) {
-
-      if (degree === undefined) {
-        return rotation.value || 0;
-      }
-
-      if (degree != rotation.value) {
-        rotation.value = Math.round((degree % 360 + (degree >= 0 ? 0 : 360)))
-      }
-      
-      return rotation.value
-    }
-
-    function rotationIncrement(transform){
-      var this_transform = transform;
-      return function(value){
-        this (this() + value)
-        return this_transform;
-      }
-    }
-
-
-    // add getters and setters for transform types in the order array
-    order.forEach(function(v) {
-      this[v] = function(d) {
-
-        var isFunction = (typeof inner[v].value === "function")
-
-        if (d == undefined) {
-          return isFunction ? inner[v].value() : inner[v].value
-        };
-
-        var new_value = (typeof d === 'function') ? d(element) : d
-
-        isFunction ? inner[v].value(new_value) : inner[v].value = new_value
-        
-        return this;
-
-      }
-    
-    this[v].incr = new inner[v].increment(this)
-      
-    }, this);
-
-    this.render = function() {
-      return this.attr('transform', this.toString());
-    }
-
-    this.animate = function(options) {
-      var options = options || {},
-        duration = options.duration || 500,
-        ease = options.ease || '',
-        opacity = options.opacity || '1';
-
-      return this.transition()
-        .duration(duration)
-        .ease(d3.ease(ease))
-        .attr('transform', this.toString())
-        .attr('opacity', opacity)
-    }    
-
-    this.toString = function() {
-      return order.map(
-        function(v) {
-          return v + '(' + inner[v].string() + ')'
-        },
-        this).join(' ');
-    }
-
-  }
+  // function Transform() {
+  //   var order = ['translate', 'scale', 'rotate'],
+  //   inner = {
+  //     translate: {
+  //       private:{x:0,y:0},
+  //       value: xyValue,
+  //       string: xyString,
+  //       increment: xyIncrement
+  //     },
+  //     scale: {
+  //       private:{x:1,y:1},
+  //       value:  xyValue,
+  //       string: xyString,
+  //       increment: xyIncrement
+  //     },
+  //     rotate: {
+  //       value: rotation,
+  //       string: function() {
+  //         return rotation()
+  //       },
+  //       increment:rotationIncrement
+  //     }
+  //   };
+  //
+  //   function xyValue(newValue){
+  //
+  //     if (newValue === undefined) {
+  //       return this.private;
+  //     }
+  //     var newObj;
+  //
+  //     if (typeof newValue ==='number'){
+  //       newObj= {x:newValue,y:newValue}
+  //     } else {
+  //       newObj=newValue
+  //     }
+  //     this.private = newObj
+  //
+  //     return this.private
+  //
+  //   }
+  //
+  //   function xyString() {
+  //     return this.private.x + ',' + this.private.y
+  //   };
+  //
+  //   function xyIncrement(transform){
+  //     var this_transform = transform;
+  //
+  //     return function(newValue){
+  //
+  //       if (typeof newValue ==='number'){
+  //         this( {x:this().x+newValue,y:this().y+newValue})
+  //       } else {
+  //         if (newValue.x||newValue.x) { this().x += newValue.x }
+  //         if (newValue.y||newValue.y) { this().y += newValue.y }
+  //       }
+  //
+  //       return this_transform;
+  //     }
+  //   }
+  //
+  //   function rotation(degree) {
+  //
+  //     if (degree === undefined) {
+  //       return rotation.value || 0;
+  //     }
+  //
+  //     if (degree != rotation.value) {
+  //       rotation.value = Math.round((degree % 360 + (degree >= 0 ? 0 : 360)))
+  //     }
+  //
+  //     return rotation.value
+  //   }
+  //
+  //   function rotationIncrement(transform){
+  //     var this_transform = transform;
+  //     return function(value){
+  //       this (this() + value)
+  //       return this_transform;
+  //     }
+  //   }
+  //
+  //
+  //   // add getters and setters for transform types in the order array
+  //   order.forEach(function(v) {
+  //     this[v] = function(d) {
+  //
+  //       var isFunction = (typeof inner[v].value === "function")
+  //
+  //       if (d == undefined) {
+  //         return isFunction ? inner[v].value() : inner[v].value
+  //       };
+  //
+  //       var new_value = (typeof d === 'function') ? d(element) : d
+  //
+  //       isFunction ? inner[v].value(new_value) : inner[v].value = new_value
+  //
+  //       return this;
+  //
+  //     }
+  //
+  //   this[v].incr = new inner[v].increment(this)
+  //
+  //   }, this);
+  //
+  //   this.render = function() {
+  //     return this.attr('transform', this.toString());
+  //   }
+  //
+  //   this.animate = function(options) {
+  //     var options = options || {},
+  //       duration = options.duration || 500,
+  //       ease = options.ease || '',
+  //       opacity = options.opacity || '1';
+  //
+  //     return this.transition()
+  //       .duration(duration)
+  //       .ease(d3.ease(ease))
+  //       .attr('transform', this.toString())
+  //       .attr('opacity', opacity)
+  //   }
+  //
+  //   this.toString = function() {
+  //     return order.map(
+  //       function(v) {
+  //         return v + '(' + inner[v].string() + ')'
+  //       },
+  //       this).join(' ');
+  //   }
+  //
+  // }
 
 
   // d3 based wheel control
